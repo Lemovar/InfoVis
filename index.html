@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tutorial</title>
+    <script src="https://d3js.org/d3.v5.js"></script>
+    <style>
+        .axis path{
+            fill:none;
+            stroke:black;
+            stroke-width: 0.5px;
+            shape-rendering: crispEdges;
+        }
+        .bar{
+            stroke: none;
+            fill: steelblue;
+        }
+        .textlabel{
+            font-family: Helvetica, Arial, sans-serif;
+            font-size:14px;
+            text-anchor: middle;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        var margin = {top:0, right:0, bottom:20, left:50},
+            width  = 800,
+            height = 500;
+
+        var svg = d3.select("body")
+            .append("svg")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("viewBox", "0 0 " + width + " " + height);
+
+        var yScale = d3.scaleLinear()
+            .range([height - margin.top - margin.bottom, 0]);
+
+        var xScale = d3.scaleBand()
+            .rangeRound([0, width - margin.right - margin.left])
+            .padding(.1);
+
+        var xAxis = d3.axisBottom()
+            .scale(xScale);
+
+        var yAxis = d3.axisLeft()
+            .scale(yScale);
+
+        function render(data){
+            yScale.domain([0, d3.max(data, function(d){ return d["population"]; })]);
+            xScale.domain(data.map(function(d){ return d["name"]; }));
+
+            svg.append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+                .selectAll(".bar")
+                .data(data)
+                .enter()
+                .append("rect")
+                .attr("class", "bar")
+                .attr("x", function(d){ return xScale(d["name"]); })
+                .attr("y", function(d){ return yScale(d["population"]); })
+                .attr("height", function(d){ return height - margin.top - margin.bottom - yScale(d["population"]); })
+                .attr("width", function(d){ return xScale.bandwidth(); });
+
+            //adding y axis to the left of the chart
+            svg.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+                .call(yAxis);
+
+            //adding x axis to the bottom of chart
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(" + margin.left + "," + (height - margin.bottom) + ")")
+                .call(xAxis);
+        }
+        function type(d){
+            d.population = +d.population;
+            return d;
+        }
+
+        d3.csv("dummy.csv", type).then(function(d){
+            render(d);
+        });
+    </script>
+
+</body>
+</html>
