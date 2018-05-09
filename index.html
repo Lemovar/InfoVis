@@ -24,7 +24,12 @@
 </head>
 <body>
     <script>
-        var margin = {top:0, right:0, bottom:20, left:50},
+        // One of the three distributions to be displayed
+        var distribution_nr = 3;
+        // Variable name of the distribution column, based on which column should be displayed
+        var distribution = "distribution_" + distribution_nr;
+
+        var margin = {top:10, right:0, bottom:20, left:50},
             width  = 800,
             height = 500;
 
@@ -37,6 +42,7 @@
         var yScale = d3.scaleLinear()
             .range([height - margin.top - margin.bottom, 0]);
 
+        // scaleBand, da wir mit Barcharts arbeiten
         var xScale = d3.scaleBand()
             .rangeRound([0, width - margin.right - margin.left])
             .padding(.1);
@@ -48,8 +54,11 @@
             .scale(yScale);
 
         function render(data){
-            yScale.domain([0, d3.max(data, function(d){ return d["population"]; })]);
-            xScale.domain(data.map(function(d){ return d["name"]; }));
+            // Die domains sind der Datenbereich. Dieser wird durch die Scales auf den Pixelbereich (range) gemapped
+            // 0 bis max
+            yScale.domain([0, d3.max(data, function(d){ return d[distribution]; })]);
+            // Da ordinal
+            xScale.domain(data.map(function(d){ return d["therapy"]; }));
 
             svg.append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
@@ -58,9 +67,11 @@
                 .enter()
                 .append("rect")
                 .attr("class", "bar")
-                .attr("x", function(d){ return xScale(d["name"]); })
-                .attr("y", function(d){ return yScale(d["population"]); })
-                .attr("height", function(d){ return height - margin.top - margin.bottom - yScale(d["population"]); })
+                .attr("x", function(d){ return xScale(d["therapy"]); })
+                .attr("y", function(d){ return yScale(d[distribution]); })
+                // yScale(d["distribution_1"]) gibt den Maximalwert der Daten im Pixelbereich an
+                .attr("height", function(d){ return height - margin.top - margin.bottom - yScale(d[distribution]); })
+                // Die Breite des scaleBands
                 .attr("width", function(d){ return xScale.bandwidth(); });
 
             //adding y axis to the left of the chart
@@ -75,12 +86,14 @@
                 .attr("transform", "translate(" + margin.left + "," + (height - margin.bottom) + ")")
                 .call(xAxis);
         }
+
         function type(d){
-            d.population = +d.population;
+            d[distribution] = +d[distribution];
             return d;
         }
 
-        d3.csv("dummy.csv", type).then(function(d){
+        // d3.csv gibt promise zurück. Dessen Wert kann innerhalb von then() genutzt werden
+        d3.csv("probabilities.csv", type).then(function(d){
             render(d);
         });
     </script>
