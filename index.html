@@ -25,7 +25,7 @@
 <body>
     <script>
         // One of the three distributions to be displayed
-        var distribution_nr = 3;
+        var distribution_nr = 1;
         // Variable name of the distribution column, based on which column should be displayed
         var distribution = "distribution_" + distribution_nr;
 
@@ -53,29 +53,12 @@
         var yAxis = d3.axisLeft()
             .scale(yScale);
 
-        function render(data){
-            // Die domains sind der Datenbereich. Dieser wird durch die Scales auf den Pixelbereich (range) gemapped
-            // 0 bis max
-            yScale.domain([0, d3.max(data, function(d){ return d[distribution]; })]);
+        function render(prob_data){
             // Da ordinal
-            xScale.domain(data.map(function(d){ return d["therapy"]; }));
-
-            svg.append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-                .selectAll(".bar")
-                .data(data)
-                .enter()
-                .append("rect")
-                .attr("class", "bar")
-                .attr("x", function(d){ return xScale(d["therapy"]); })
-                .attr("y", function(d){ return yScale(d[distribution]); })
-                // yScale(d["distribution_1"]) gibt den Maximalwert der Daten im Pixelbereich an
-                .attr("height", function(d){ return height - margin.top - margin.bottom - yScale(d[distribution]); })
-                // Die Breite des scaleBands
-                .attr("width", function(d){ return xScale.bandwidth(); });
+            xScale.domain(prob_data.map(function(d){ return d["therapy"]; }));
 
             //adding y axis to the left of the chart
-            svg.append("g")
+            var yAxisHandleForUpdate = svg.append("g")
                 .attr("class", "y axis")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
                 .call(yAxis);
@@ -85,8 +68,68 @@
                 .attr("class", "x axis")
                 .attr("transform", "translate(" + margin.left + "," + (height - margin.bottom) + ")")
                 .call(xAxis);
+
+            var updateBars = function(data, distribution) {
+                // Die domains sind der Datenbereich. Dieser wird durch die Scales auf den Pixelbereich (range) gemapped
+                // 0 bis max
+                yScale.domain([0, d3.max(data, function(d){ return d[distribution]; })]);
+                yAxisHandleForUpdate.call(yAxis);
+
+                var bars = svg.selectAll(".bar").data(data);
+
+                // Add bars for new data
+                bars.enter()
+                    .append("rect")
+                    // Bars an die richtige Position bringen
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+                    .attr("class", "bar")
+                    .attr("x", function(d){ return xScale(d["therapy"]); })
+                    .attr("y", function(d){ return yScale(d[distribution]); })
+                    // yScale(d["distribution_1"]) gibt den Maximalwert der Daten im Pixelbereich an
+                    .attr("height", function(d){ return height - margin.top - margin.bottom - yScale(d[distribution]); })
+                    // Die Breite des scaleBands
+                    .attr("width", function(d){ return xScale.bandwidth(); });
+
+            // Update old ones, already have x / width from before
+            bars
+                .transition().duration(500)
+                .attr("y", function(d){ return yScale(d[distribution]); })
+                // yScale(d["distribution_1"]) gibt den Maximalwert der Daten im Pixelbereich an
+                .attr("height", function(d){ return height - margin.top - margin.bottom - yScale(d[distribution]); });
+
+            // Remove old bars
+            bars.exit().remove();
+            };
+
+            // Handler for dropdown value change
+            var dropdownChange = function() {
+                var newDist = d3.select(this).property('value');
+
+                updateBars(prob_data, newDist);
+            };
+
+            // Get names of choices for dropdown list
+            var distributions = ["distribution_1", "distribution_2", "distribution_3"];
+
+            // Dropdown Listen Update-Manager?
+            var dropdown = d3.select("body")
+                .insert("select", "svg")
+                .on("change", dropdownChange);
+
+            // Render dropdown list
+            dropdown.selectAll("option")
+                .data(distributions)
+                .enter().append("option")
+                .attr("value", function (d) { return d; })
+                .text(function (d) {
+                    return d[0].toUpperCase() + d.slice(1,d.length); // capitalize 1st letter
+                });
+
+            // Standard values
+            updateBars(prob_data, "distribution_1");
         }
 
+        // Turn numerical Stings into actual numerical values
         function type(d){
             d[distribution] = +d[distribution];
             return d;
