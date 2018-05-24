@@ -1,0 +1,12 @@
+label;state_1;relevancies_1;state_2;relevancies_2;state_3;relevancies_3;
+vocal_fold_stroboscopy;fixation;0.5;fixation;0.3;fixation;0.326;
+tumory_type_pathohistological_finding;squamous cell carcinoma;0.2;squamous cell carcinoma;0.1;squamous cell carcinoma;0.16;
+infiltration_vocal_fold_pathohistological_finding;none;0.001;none;0.07;none;0.055;
+infiltration_vocal_fold_clinical_examination;none;0.01;none;0.03;none;0.028;
+lymphnode_positive_side_pathohistological_finding;none;0.15;none;0.002;none;0.04;
+lymphnode_positive_side_CT_neck;bilateral;0.005;bilateral;0.08;bilateral;0.12;
+lymphnode_side_palpation;bilateral;0.004;bilateral;0.001;bilateral;0.012;
+bone_methastasis_Scinti;M1;0.03;M1;0.08;M1;0.09;
+bone_methastasis_PET;M0;0.1;M0;0.137;M0;0.14;
+lymphnode_position_MRI;NA;0;bilateral;0.2;bilateral;0.019;
+methastasis_lung_endoscopy;NA;0;NA;0;M0;0.01;
