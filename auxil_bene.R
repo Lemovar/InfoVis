@@ -36,11 +36,11 @@ parallel_blocks <- function(columns = c("relevancies_1")) {
       # Lower lines of the contours
       add_trace(y = relevs_upper,
                 type = 'scatter', mode = 'lines', line = list(color = cols[i]),
-                showlegend = FALSE, name = name) %>%
+                showlegend = FALSE, name = " ") %>%
       # Upper lines of the contours
       add_trace(y = relevs_lower, type = 'scatter', mode = 'lines',
                 fill = 'tonexty', fillcolor=cols[i], hoveron = 'points+fills', hoverinfo = name, line = list(color = cols[i]),
-                name = name)
+                name = " ")
     # # Black lines on the axis
     # for(j in 1:length(axs)) {
     #   p <- p %>% add_trace(x = c(j,j), y = c(relevs[[paste(axs[j], "_lower", sep = "")]],relevs[[axs[j]]]), 
@@ -97,5 +97,32 @@ parallel_blocks <- function(columns = c("relevancies_1")) {
               showgrid = FALSE
             ))
   
+  return(p)
+}
+
+prob_bars <- function(col_new, col_old = NULL) {
+  
+  probs_df <- read.csv("probs.csv", sep = ",")
+
+  if(!is.null(col_old)) {
+    # Some calculations to come up with the correct height of each bar stack
+    tmp_neg <- tmp_pos <- probs_df[[col_new]] - probs_df[[col_old]]
+    tmp_neg[tmp_neg > 0] <- 0
+    tmp_pos[tmp_pos < 0] <- 0
+    probs_df$Grey <- probs_df[[col_old]] + tmp_neg
+    probs_df$Red <- abs(tmp_neg)
+    probs_df$Green <- tmp_pos
+  } else {
+    # No Red or Green Bars should be added, thus 0
+    probs_df$Grey <- probs_df[[col_new]]
+    probs_df$Red <- 0
+    probs_df$Green <- 0
+  }
+  
+  p <- plot_ly(data = probs_df, x = ~therapy, y = ~Grey, name = "Old", type = "bar") %>%
+    add_trace(y=~Red, name = 'Less', marker = list(color = 'rgba(198, 13, 13, .5)')) %>%
+    add_trace(y=~Green, name = 'More', marker = list(color = 'rgb(13, 216, 125)')) %>%
+    layout(yaxis = list(title = 'Count', range = c(0, max(probs_df[-1]))), barmode = 'stack')
+
   return(p)
 }

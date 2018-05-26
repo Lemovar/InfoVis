@@ -24,7 +24,7 @@ ui <- fluidPage(
   # Application title
   titlePanel("RECOMMANDER"),
   
-  # Sidebar with a slider input for number of bins 
+  fluidRow(plotlyOutput("probsBarPlot")),
   fluidRow(
     column(4,
            p("."),
@@ -39,11 +39,11 @@ ui <- fluidPage(
                     hr(),
                     selectInput("lymph", label = NULL,
                                c("no value (current)" = "none",
-                                 "bilateral" = "relevancies_2"),
+                                 "bilateral" = "2"),
                                selected = "none"),
                     selectInput("metha", label = NULL,
                                 c("no value (current)" = "none",
-                                  "M0" = "relevancies_3"),
+                                  "M0" = "3"),
                                 selected = "none")
              )
            )
@@ -62,6 +62,18 @@ server <- function(input, output) {
   #   relevancies_df <- read.csv("relevancies.csv", sep = ";")
   #   relevancies_df$label
   # })
+  
+  output$probsBarPlot <- renderPlotly({
+    p <- plot.new()
+    if(input$metha != "none") {
+      p <- prob_bars(col_new = paste("distribution_", input$metha, sep=""), col_old = "distribution_1")
+    } else if(input$lymph != "none") {
+      p <- prob_bars(col_new = paste("distribution_", input$lymph, sep=""), col_old = "distribution_1")
+    } else {
+      p <- prob_bars(col_new = "distribution_1")
+    }
+  })
+  
   output$label <- renderUI({
     HTML(paste(relevancies_df$label,collapse="<hr {border-top: 1px solid #000000;}/>"))
   })
@@ -82,12 +94,11 @@ server <- function(input, output) {
   # })
   
   output$parallelBlocksPlot <- renderPlotly({
-    p <- plot.new()
     columns <- c("relevancies_1")
     if(input$metha != "none") {
-      columns <- c(columns, input$metha)
+      columns <- c(columns, paste("relevancies_", input$metha, sep=""))
     } else if(input$lymph != "none") {
-      columns <- c(columns, input$lymph)
+      columns <- c(columns, paste("relevancies_", input$lymph, sep=""))
     }
     parallel_blocks(columns)
   })
