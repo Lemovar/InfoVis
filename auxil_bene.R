@@ -5,8 +5,8 @@ parallel_blocks <- function(columns = c("relevancies_1")) {
   padding = 0.02
   # Height of column header box
   box_height = 0.2
-  for(relevancy in c("relevancies_1", "relevancies_2", "relevancies_3")) {
-    df <- df[order(df[relevancy], df$label),]
+  for(relevancy in c("relevancies_3", "relevancies_2", "relevancies_1")) {
+    df <- df[order(df[relevancy]),] #, df$label
     for(i in c(2:11)) {
       df[relevancy][i:11,1] <- df[relevancy][i:11,1] + padding
     }
@@ -20,6 +20,7 @@ parallel_blocks <- function(columns = c("relevancies_1")) {
             'rgba(202,178,214,0.6)', 'rgba(106,61,154,0.6)', 'rgba(150,210,150,0.6)')
   
   axs <- rep(columns, each=2)
+  headers = c("Current", rep(c("Adjusted"), times = length(axs)-1))
   #axs <- c("relevancies_1", "relevancies_2", "relevancies_3")
   p <- plot_ly(x = c(1:length(axs)))
   i = 1
@@ -36,9 +37,9 @@ parallel_blocks <- function(columns = c("relevancies_1")) {
       # Lower lines of the contours
       add_trace(y = relevs_upper,
                 type = 'scatter', mode = 'lines', line = list(color = cols[i]),
-                showlegend = FALSE, name = " ") %>%
+                showlegend = FALSE) %>%
       # Upper lines of the contours
-      add_trace(y = relevs_lower, type = 'scatter', mode = 'lines',
+      add_trace(y = relevs_lower, type = 'scatter', sort = FALSE, mode = 'lines',
                 fill = 'tonexty', fillcolor=cols[i], hoveron = 'points+fills', hoverinfo = name, line = list(color = cols[i]),
                 name = " ")
     # # Black lines on the axis
@@ -73,7 +74,8 @@ parallel_blocks <- function(columns = c("relevancies_1")) {
           x = c(j+0.5),
           y = c(stack_height+padding+box_height/2),
           mode = "text",
-          text = axs[j], textfont = list(color = '#FFFFFF', size = 14),
+          text = headers[j], #text = axs[j],
+          textfont = list(color = '#FFFFFF', size = 14),
           type = 'scatter', showlegend = FALSE)
     }
     i = i+1
@@ -81,7 +83,7 @@ parallel_blocks <- function(columns = c("relevancies_1")) {
   
   p <- p %>%
           layout(
-            autosize = F, width = 500+300+(length(columns)-1)*620, height = 600,
+            autosize = F, width = 300+(length(columns)-1)*300, height = 750,
             xaxis = list(
               title = "",
               zeroline = FALSE,
@@ -95,7 +97,7 @@ parallel_blocks <- function(columns = c("relevancies_1")) {
               showline = FALSE,
               showticklabels = FALSE,
               showgrid = FALSE
-            ))
+            )) %>% config(displayModeBar = F)
   
   return(p)
 }
@@ -119,10 +121,56 @@ prob_bars <- function(col_new, col_old = NULL) {
     probs_df$Green <- 0
   }
   
-  p <- plot_ly(data = probs_df, x = ~therapy, y = ~Grey, name = "Old", type = "bar") %>%
-    add_trace(y=~Red, name = 'Less', marker = list(color = 'rgba(198, 13, 13, .5)')) %>%
-    add_trace(y=~Green, name = 'More', marker = list(color = 'rgb(13, 216, 125)')) %>%
-    layout(yaxis = list(title = 'Count', range = c(0, max(probs_df[-1]))), barmode = 'stack')
+  p <- plot_ly(data = probs_df, x = ~therapy, y = ~Grey, name = "Old", type = "bar", 
+               marker = list(color = 'rgba(103, 169, 207, 1)'), showlegend = FALSE) %>%
+    add_trace(y=~Red, name = 'Less', marker = list(color = 'rgba(103, 169, 207, .5)'), showlegend = FALSE) %>%
+    add_trace(y=~Green, name = 'More', marker = list(color = 'rgb(13, 216, 125)'), showlegend = FALSE) %>%
+    layout(yaxis = list(title = 'Count', range = c(0, 1)), barmode = 'stack')
+  
+  p <- p %>%
+    layout(
+      autosize = T, height = 600,
+      xaxis = list(
+        title = ""),
+      yaxis = list(
+        title = "",
+        zeroline = T,
+        showline = F,
+        showticklabels = FALSE,
+        showgrid = FALSE
+      )) %>% config(displayModeBar = F)
 
+  return(p)
+}
+prob_changes <- function(x, y_old, y_new) {
+  y_low <- c(0,0,0)
+  y_low[which(y_new>=y_old)] <- y_old[which(y_new>=y_old)]
+  y_mid <- c(0,0,0)
+  y_mid[which(y_new>=y_old)] <- y_new[which(y_new>=y_old)] - y_old[which(y_new>=y_old)]
+  y_high <- c(0,0,0)
+  y_high[which(y_new<y_old)] <- y_new[which(y_new<y_old)]
+  y_highest <- c(0,0,0)
+  y_highest[which(y_new<y_old)] <- y_old[which(y_new<y_old)] - y_new[which(y_new<y_old)]
+  
+  p <- plot_ly(x = x, y = y_low, type = "bar",  height = 600,
+          marker = list(color = 'rgba(103, 169, 207, 1)',
+                        line = list(color = 'rgb(255,255,255)', width = 2)),
+          name = "Current", hoverinfo = "name", showlegend = FALSE) %>%
+    add_trace(y = y_mid, marker = list(color = 'rgba(103, 169, 207, 1)',
+                                       line = list(color = 'rgb(255,255,255)', width = 2)),
+              name = "Adjusted", hoverinfo = "name", showlegend = FALSE) %>%
+    add_trace(y = y_high, marker = list(color = 'rgba(103, 169, 207, 1)',
+                                        line = list(color = 'rgb(255,255,255)', width = 2)),
+              name = "Adjusted", hoverinfo = "name", showlegend = FALSE) %>%
+    add_trace(y = y_highest, marker = list(color = 'rgba(103, 169, 207, .3)',
+                                           line = list(color = 'rgb(255,255,255)', width = 2)),
+              name = "Current", hoverinfo = "name", showlegend = FALSE) %>%
+    layout(autosize = T,
+           xaxis = list(title = ""),
+           yaxis = list(title = '', range = c(0, 1), zeroline = T,showline = F, 
+                        showticklabels = F, showgrid = F),
+           barmode = 'stack') %>% 
+    config(displayModeBar = F)
+  
   return(p)
 }
