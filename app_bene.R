@@ -46,11 +46,11 @@ ui <- fluidPage(
                                            HTML("<br>"),
                                            selectInput("lymph", label = NULL,
                                                        c("no value (current)" = "none",
-                                                         "bilateral" = "2"),
+                                                         "bilateral (adjusted)" = "2"),
                                                        selected = "none"),
                                            selectInput("metha", label = NULL,
                                                        c("no value (current)" = "none",
-                                                         "M0" = "3"),
+                                                         "M0 (adjusted)" = "3"),
                                                        selected = "none")
                                     )
                                   )
@@ -73,8 +73,8 @@ server <- function(input, output) {
   probs_df <- read.csv("probs.csv", sep = ",")
   # cols <- c("#CAE2EE", "#79AED2", "#D1ECB9", "#85C680", "#FDC2C2", "#EE7677", 
   #           "#FED9A9", "#FFB266", "#DFD1E6", "#A68BC2", "#C0E4C0")
-  cols <- c("#C0E4C0", "#A68BC2", "#DFD1E6", "#FFB266", "#FED9A9", "#EE7677",
-            "#FDC2C2", "#85C680", "#D1ECB9", "#79AED2", "#CAE2EE")
+  cols <- c("#FFFF9D", "#A68BC2", "#DFD1E6", "#FFB266", "#FED9A9", "#EE7677",
+            "#FDC2C2", "#85C680", "#D1ECB9", "#79AED2", "#CAE2EE") # #C0E4C0
 
   
   # output$debug <- renderText({
@@ -116,10 +116,16 @@ server <- function(input, output) {
                          border: 1px solid black;
   }
                          </style></head><body><table>')
+    # Header row
+    html_output = paste(html_output,
+                        '<tr>
+                        <th height=60, width=350, style="padding: 0px 0px 0px 10px;">State</th>
+                        </tr>',
+                        collapse = '')
     
     for(i in 1:(length(relevancies_df$state_1)-2)) {
       html_output = paste(html_output,
-                          '<tr><td height=60, width=350>',
+                          '<tr><td height=60, width=350, style="padding: 0px 0px 0px 10px;">',
                           as.character(relevancies_df$state_1[i])[1],
                           ' (current)',
                           '</td></tr>',
@@ -139,9 +145,17 @@ server <- function(input, output) {
             }
           </style></head><body><table>')
 
+    # Header row
+    html_output = paste(html_output,
+                        '<tr>
+                        <th height=60, width=350, style="padding: 0px 0px 0px 10px;">Label</th>
+                        </tr>',
+                        collapse = '')
+    
     for(i in 1:length(relevancies_df$label)) {
       html_output = paste(html_output,
-                          '<tr><td bgcolor="', cols[i], '", height=60, width=450>',
+                          '<tr><td bgcolor="', cols[i],
+                          '", height=60, width=450, style="padding: 0px 0px 0px 10px;">',
                           as.character(relevancies_df$label[i])[1],
                           '</td></tr>',
                           collapse = '')

@@ -17,7 +17,7 @@ parallel_blocks <- function(columns = c("relevancies_1")) {
   
   cols <- c('rgba(166,206,227,0.6)', 'rgba(31,120,180,0.6)', 'rgba(178,223,138,0.6)', 'rgba(51,160,44,0.6)',
             'rgba(251,154,153,0.6)', 'rgba(227,26,28,0.6)', 'rgba(253,191,111,0.6)', 'rgba(255,127,0,0.6)',
-            'rgba(202,178,214,0.6)', 'rgba(106,61,154,0.6)', 'rgba(150,210,150,0.6)')
+            'rgba(202,178,214,0.6)', 'rgba(106,61,154,0.6)', 'rgba(255, 255, 91,0.6)') #150,210,150
   
   axs <- rep(columns, each=2)
   headers = c("Current", rep(c("Adjusted"), times = length(axs)-1))
@@ -37,11 +37,12 @@ parallel_blocks <- function(columns = c("relevancies_1")) {
       # Lower lines of the contours
       add_trace(y = relevs_upper,
                 type = 'scatter', mode = 'lines', line = list(color = cols[i]),
-                showlegend = FALSE) %>%
+                showlegend = FALSE, hoverinfo = "none") %>%
       # Upper lines of the contours
       add_trace(y = relevs_lower, type = 'scatter', sort = FALSE, mode = 'lines',
-                fill = 'tonexty', fillcolor=cols[i], hoveron = 'points+fills', hoverinfo = name, line = list(color = cols[i]),
-                name = " ")
+                fill = 'tonexty', fillcolor=cols[i], hoverinfo = "none", line = list(color = cols[i]),
+                name = " ", showlegend = FALSE # TBD: Entfernen für Bericht
+                )
     # # Black lines on the axis
     # for(j in 1:length(axs)) {
     #   p <- p %>% add_trace(x = c(j,j), y = c(relevs[[paste(axs[j], "_lower", sep = "")]],relevs[[axs[j]]]), 
@@ -56,11 +57,11 @@ parallel_blocks <- function(columns = c("relevancies_1")) {
         # Add left column border
         add_trace(x = c(j,j), y = c(0,stack_height+padding+box_height), 
                   type = 'scatter', mode = 'lines', line = list(color = 'rgba(0,0,0,1)'),
-                  showlegend = FALSE, name = name) %>% 
+                  showlegend = FALSE, name = name, hoverinfo = "none") %>% 
         # Add right column border
         add_trace(x = c(j+1,j+1), y = c(0,stack_height+padding+box_height), 
                   type = 'scatter', mode = 'lines', line = list(color = 'rgba(0,0,0,1)'),
-                  showlegend = FALSE, name = name) %>%
+                  showlegend = FALSE, name = name, hoverinfo = "none") %>%
         # Add column header box
         add_trace(
           x = c(j,j,j+1,j+1),
@@ -68,7 +69,7 @@ parallel_blocks <- function(columns = c("relevancies_1")) {
           mode = "none",
           type = 'scatter',
           fill = 'toself',
-          fillcolor = '#000000', showlegend = FALSE) %>%
+          fillcolor = '#000000', showlegend = FALSE, hoverinfo = "none") %>%
         # Add column header text
         add_trace(
           x = c(j+0.5),
@@ -76,14 +77,14 @@ parallel_blocks <- function(columns = c("relevancies_1")) {
           mode = "text",
           text = headers[j], #text = axs[j],
           textfont = list(color = '#FFFFFF', size = 14),
-          type = 'scatter', showlegend = FALSE)
+          type = 'scatter', showlegend = FALSE, hoverinfo = "none")
     }
     i = i+1
   }
   
   p <- p %>%
           layout(
-            autosize = F, width = 300+(length(columns)-1)*300, height = 750,
+            autosize = F, width = 250+(length(columns)-1)*300, height = 750, # TBD: 300 am Anfang für Bericht
             xaxis = list(
               title = "",
               zeroline = FALSE,
@@ -121,11 +122,18 @@ prob_bars <- function(col_new, col_old = NULL) {
     probs_df$Green <- 0
   }
   
-  p <- plot_ly(data = probs_df, x = ~therapy, y = ~Grey, name = "Old", type = "bar", 
-               marker = list(color = 'rgba(103, 169, 207, 1)'), showlegend = FALSE) %>%
+  t <- list(
+    family = "arial",
+    size = 40,
+    color = 'rgba(103, 169, 207, 1)')
+  percentages <- paste(as.character(probs_df$Grey * 100), '%', sep = '')
+  
+  p <- plot_ly(data = probs_df, x = ~therapy, y = ~Grey, name = "Old", hoverinfo = "none", type = "bar", 
+               marker = list(color = 'rgba(103, 169, 207, 1)'), showlegend = FALSE)%>%
+               #,text = percentages, textfont = t, textposition = 'outside') %>%
     add_trace(y=~Red, name = 'Less', marker = list(color = 'rgba(103, 169, 207, .5)'), showlegend = FALSE) %>%
     add_trace(y=~Green, name = 'More', marker = list(color = 'rgb(13, 216, 125)'), showlegend = FALSE) %>%
-    layout(yaxis = list(title = 'Count', range = c(0, 1)), barmode = 'stack')
+    layout(yaxis = list(title = 'Count', range = c(0, 0.8)), barmode = 'stack')
   
   p <- p %>%
     layout(
@@ -138,38 +146,63 @@ prob_bars <- function(col_new, col_old = NULL) {
         showline = F,
         showticklabels = FALSE,
         showgrid = FALSE
-      )) %>% config(displayModeBar = F)
+      )) %>%
+    add_annotations(text = percentages,
+                    x = probs_df$therapy,
+                    y = probs_df$Grey + 0.04,
+                    #xref = "x",
+                    #yref = "y",
+                    font = list(family = 'Arial',
+                                size = 35,
+                                color = 'rgba(103, 169, 207, 1)'),
+                    showarrow = FALSE) %>% 
+    config(displayModeBar = F)
 
   return(p)
 }
 prob_changes <- function(x, y_old, y_new) {
   y_low <- c(0,0,0)
-  y_low[which(y_new>=y_old)] <- y_old[which(y_new>=y_old)]
+  y_low[which(y_new>y_old)] <- y_old[which(y_new>y_old)]
   y_mid <- c(0,0,0)
   y_mid[which(y_new>=y_old)] <- y_new[which(y_new>=y_old)] - y_old[which(y_new>=y_old)]
   y_high <- c(0,0,0)
-  y_high[which(y_new<y_old)] <- y_new[which(y_new<y_old)]
+  y_high[which(y_new<=y_old)] <- y_new[which(y_new<=y_old)]
   y_highest <- c(0,0,0)
   y_highest[which(y_new<y_old)] <- y_old[which(y_new<y_old)] - y_new[which(y_new<y_old)]
+  
+  t <- list(
+    family = "arial",
+    size = 40,
+    color = 'rgba(103, 169, 207, 1)')
+  percentages <- paste(as.character(y_new * 100), '%', sep = '')
   
   p <- plot_ly(x = x, y = y_low, type = "bar",  height = 600,
           marker = list(color = 'rgba(103, 169, 207, 1)',
                         line = list(color = 'rgb(255,255,255)', width = 2)),
-          name = "Current", hoverinfo = "name", showlegend = FALSE) %>%
+          name = "Current", hoverinfo = "none", showlegend = FALSE) %>%
     add_trace(y = y_mid, marker = list(color = 'rgba(103, 169, 207, 1)',
                                        line = list(color = 'rgb(255,255,255)', width = 2)),
-              name = "Adjusted", hoverinfo = "name", showlegend = FALSE) %>%
+              name = "Adjusted", hoverinfo = "none", showlegend = FALSE) %>%
     add_trace(y = y_high, marker = list(color = 'rgba(103, 169, 207, 1)',
                                         line = list(color = 'rgb(255,255,255)', width = 2)),
-              name = "Adjusted", hoverinfo = "name", showlegend = FALSE) %>%
+              name = "Adjusted", hoverinfo = "none", showlegend = FALSE) %>%
     add_trace(y = y_highest, marker = list(color = 'rgba(103, 169, 207, .3)',
                                            line = list(color = 'rgb(255,255,255)', width = 2)),
-              name = "Current", hoverinfo = "name", showlegend = FALSE) %>%
+              name = "Current", hoverinfo = "none", showlegend = FALSE) %>%
     layout(autosize = T,
            xaxis = list(title = ""),
-           yaxis = list(title = '', range = c(0, 1), zeroline = T,showline = F, 
+           yaxis = list(title = '', range = c(0, 0.8), zeroline = T,showline = F, 
                         showticklabels = F, showgrid = F),
-           barmode = 'stack') %>% 
+           barmode = 'stack') %>%
+    add_annotations(text = percentages,
+                    x = x,
+                    y = y_new + 0.04,
+                    #xref = "x",
+                    #yref = "y",
+                    font = list(family = 'Arial',
+                                size = 35,
+                                color = 'rgba(103, 169, 207, 1)'),
+                    showarrow = FALSE) %>% 
     config(displayModeBar = F)
   
   return(p)
