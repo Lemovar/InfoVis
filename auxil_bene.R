@@ -178,16 +178,16 @@ prob_changes <- function(x, y_old, y_new) {
   
   p <- plot_ly(x = x, y = y_low, type = "bar",  height = 600,
           marker = list(color = 'rgba(103, 169, 207, 1)',
-                        line = list(color = 'rgb(255,255,255)', width = 2)),
+                        line = list(color = 'rgb(255,255,255)', width = 1)),
           name = "Current", hoverinfo = "none", showlegend = FALSE) %>%
     add_trace(y = y_mid, marker = list(color = 'rgba(103, 169, 207, 1)',
-                                       line = list(color = 'rgb(255,255,255)', width = 2)),
+                                       line = list(color = 'rgb(255,255,255)', width = 1)),
               name = "Adjusted", hoverinfo = "none", showlegend = FALSE) %>%
     add_trace(y = y_high, marker = list(color = 'rgba(103, 169, 207, 1)',
-                                        line = list(color = 'rgb(255,255,255)', width = 2)),
+                                        line = list(color = 'rgb(255,255,255)', width = 1)),
               name = "Adjusted", hoverinfo = "none", showlegend = FALSE) %>%
     add_trace(y = y_highest, marker = list(color = 'rgba(103, 169, 207, .3)',
-                                           line = list(color = 'rgb(255,255,255)', width = 2)),
+                                           line = list(color = 'rgb(255,255,255)', width = 1)),
               name = "Current", hoverinfo = "none", showlegend = FALSE) %>%
     layout(autosize = T,
            xaxis = list(title = ""),
