@@ -14,7 +14,7 @@ library(Rtsne)
 library(plotly)
 library(reshape2)
 setwd("C:/Studium/Computervisualistik/Informationsvisualisierung/Projekt/WS_project")
-source(paste0(getwd(), "/auxil_bene.R"), echo = F)
+source(paste0(getwd(), "/auxil.R"), echo = F)
 
 
 
@@ -59,6 +59,9 @@ ui <- fluidPage(
                                   plotlyOutput("parallelBlocksPlot")
                            )
                          )
+                ),
+                tabPanel("History", 
+                         plotlyOutput("timelinePlot")
                 )
            )
       )
@@ -185,6 +188,10 @@ server <- function(input, output) {
       columns <- c(columns, paste("relevancies_", input$lymph, sep=""))
     }
     parallel_blocks(columns)
+  })
+  
+  output$timelinePlot <- renderPlotly({
+    timeline(probs_df)
   })
 }
 

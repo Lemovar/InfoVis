@@ -207,3 +207,53 @@ prob_changes <- function(x, y_old, y_new) {
   
   return(p)
 }
+
+timeline <- function(probs_df) {
+  # Dummy dates
+  x = c('01.01.2016', '01.01.2017', '01.01.2018')
+  
+  # Create transpose of the probs_df dataframe
+  dat = probs_df[,-1] %>% t() %>% as.data.frame()
+  colnames(dat) <- probs_df$therapy
+  
+  p <- plot_ly(x = x) %>%
+    add_trace(y = dat$chemotherapy, type = 'scatter', mode = 'lines', hoverinfo= "none",
+              line = list(color = 'rgba(109, 139, 198,1)', width = 4), showlegend = F)  %>%
+    add_trace(y = dat$chemotherapy, type = 'scatter', mode = 'markers', name = "chemotherapy",
+              marker = list(color = 'rgba(109, 139, 198,1)', size = 12), showlegend = F) %>%
+    add_trace(y = dat$radiotherapy, type = 'scatter', mode = 'lines', hoverinfo= "none",
+              line = list(color = 'rgba(187, 109, 198,1)', width = 4), showlegend = F)  %>%
+    add_trace(y = dat$radiotherapy, type = 'scatter', mode = 'markers', name = "radiotherapy",
+              marker = list(color = 'rgba(187, 109, 198,1)', size = 12), showlegend = F) %>%
+    add_trace(y = dat$surgery, type = 'scatter', mode = 'lines', hoverinfo= "none",
+              line = list(color = 'rgba(109, 198, 130,1)', width = 4), showlegend = F) %>%
+    add_trace(y = dat$surgery, type = 'scatter', mode = 'markers', name = "surgery",
+              marker = list(color = 'rgba(109, 198, 130,1)', size = 12), showlegend = F) %>%
+    # # Quick n Dirty x-Achsenlinie
+    # add_trace(y = c(0, 0, 0), type = 'scatter', mode = 'lines', hoverinfo= "none",
+    #           line = list(color = 'rgba(204, 204, 204,1)', width = 4), showlegend = F) %>%
+    layout(autosize = T,
+           xaxis = list(title = "", tickcolor = 'rgb(204, 204, 204)',
+                        tickwidth = 5, ticklen = 10,
+                        tickfont = list(family = 'Arial',
+                                        size = 22,
+                                        color = 'rgb(82, 82, 82)')),
+           yaxis = list(title = '', zeroline = T, showline = F, 
+                        showticklabels = F, showgrid = F)) %>%
+    add_annotations(text = paste(" ", probs_df$therapy[1]), x = c('01.01.2018'), 
+                    y = probs_df$distribution_3[1], xanchor = 'left',
+                    font = list(family = 'Arial', size = 35, color = 'rgba(109, 139, 198, 1)'),
+                    showarrow = FALSE) %>% 
+    add_annotations(text = paste(" ", probs_df$therapy[2]), x = c('01.01.2018'), 
+                    y = probs_df$distribution_3[2], xanchor = 'left',
+                    font = list(family = 'Arial', size = 35, color = 'rgba(187, 109, 198, 1)'),
+                    showarrow = FALSE) %>% 
+    add_annotations(text = paste(" ", probs_df$therapy[3]), x = c('01.01.2018'), 
+                    y = probs_df$distribution_3[3], xanchor = 'left',
+                    font = list(family = 'Arial', size = 35, color = 'rgba(109, 198, 130, 1)'),
+                    showarrow = FALSE) %>% 
+    config(displayModeBar = F)
+  
+  return(p)
+  
+}
