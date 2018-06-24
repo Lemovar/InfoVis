@@ -137,7 +137,8 @@ prob_bars <- function(col_new, col_old = NULL) {
   
   p <- p %>%
     layout(
-      autosize = T, height = 600,
+      title = "Therapy Suggestions",
+      autosize = T, height = 680,
       xaxis = list(
         tickfont = list(family = 'Arial',
                                    size = 16,
@@ -179,7 +180,7 @@ prob_changes <- function(x, y_old, y_new) {
     color = 'rgba(103, 169, 207, 1)')
   percentages <- paste(as.character(y_new * 100), '%', sep = '')
   
-  p <- plot_ly(x = x, y = y_low, type = "bar",  height = 600,
+  p <- plot_ly(x = x, y = y_low, type = "bar",  height = 680,
           marker = list(color = 'rgba(103, 169, 207, 1)',
                         line = list(color = 'rgb(255,255,255)', width = 1, dash = "dash")),
           name = "Current", hoverinfo = "none", showlegend = FALSE) %>%
@@ -192,7 +193,8 @@ prob_changes <- function(x, y_old, y_new) {
     add_trace(y = y_highest, marker = list(color = 'rgba(103, 169, 207, .3)',
                                            line = list(color = 'rgb(255,255,255)', width = 1, dash = "dash")),
               name = "Current", hoverinfo = "none", showlegend = FALSE) %>%
-    layout(autosize = T,
+    layout(title = "Therapy Suggestions", 
+           autosize = T,
            xaxis = list(
              tickfont = list(family = 'Arial',
                              size = 16,
@@ -238,23 +240,21 @@ timeline <- function(probs_df) {
               showlegend = FALSE, hoverinfo = "none") %>%
     # Chemotherapy lines and markers
     add_trace(y = dat$chemotherapy, type = 'scatter', mode = 'lines', hoverinfo= "none",
-              line = list(color = 'rgba(109, 139, 198,1)', width = 4), showlegend = F)  %>%
+              line = list(color = 'rgba(109, 139, 198,1)', width = 4), showlegend = F, hoverinfo = "none")  %>%
     add_trace(y = dat$chemotherapy, type = 'scatter', mode = 'markers', name = "chemotherapy",
-              marker = list(color = 'rgba(109, 139, 198,1)', size = 39), showlegend = F) %>%
+              marker = list(color = 'rgba(109, 139, 198,1)', size = 39), showlegend = F, hoverinfo = "none") %>%
     # Radiotherapy lines and markers
     add_trace(y = dat$radiotherapy, type = 'scatter', mode = 'lines', hoverinfo= "none",
-              line = list(color = 'rgba(187, 109, 198,1)', width = 4), showlegend = F)  %>%
+              line = list(color = 'rgba(187, 109, 198,1)', width = 4), showlegend = F, hoverinfo = "none")  %>%
     add_trace(y = dat$radiotherapy, type = 'scatter', mode = 'markers', name = "radiotherapy",
-              marker = list(color = 'rgba(187, 109, 198,1)', size = 39), showlegend = F) %>%
+              marker = list(color = 'rgba(187, 109, 198,1)', size = 39), showlegend = F, hoverinfo = "none") %>%
     # Surgery lines and markers
     add_trace(y = dat$surgery, type = 'scatter', mode = 'lines', hoverinfo= "none",
-              line = list(color = surgery_color, width = 4), showlegend = F) %>%
+              line = list(color = surgery_color, width = 4), showlegend = F, hoverinfo = "none") %>%
     add_trace(y = dat$surgery, type = 'scatter', mode = 'markers', name = "surgery",
-              marker = list(color = surgery_color, size = 39), showlegend = F) %>%
-    # # Quick n Dirty x-Achsenlinie
-    # add_trace(y = c(0, 0, 0), type = 'scatter', mode = 'lines', hoverinfo= "none",
-    #           line = list(color = 'rgba(204, 204, 204,1)', width = 4), showlegend = F) %>%
-    layout(autosize = T,
+              marker = list(color = surgery_color, size = 39), showlegend = F, hoverinfo = "none") %>%
+    layout(title = "Development of Therapy Suggestions",
+           autosize = T,
            xaxis = list(title = "", tickcolor = 'rgb(204, 204, 204)',
                         tickwidth = 5, ticklen = 10,
                         tickfont = list(family = 'Arial',

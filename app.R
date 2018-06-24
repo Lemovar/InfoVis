@@ -10,9 +10,7 @@
 library(shiny)
 library(plyr)
 library(tidyverse)
-library(Rtsne)
 library(plotly)
-library(reshape2)
 setwd("C:/Studium/Computervisualistik/Informationsvisualisierung/Projekt/WS_project")
 source(paste0(getwd(), "/auxil.R"), echo = F)
 
@@ -26,11 +24,15 @@ ui <- fluidPage(
   mainPanel(
     tabsetPanel(type = "pills",
                 tabPanel("Overview",
+                         HTML("<br>"),
+                         HTML("<br>"),
                          plotlyOutput("probsOverviewPlot")),
                 tabPanel("Details", 
                          #fluidRow(),
                          fluidRow(
-                           column(5,
+                           column(5, 
+                                  HTML("<br>"),
+                                  HTML("<br>"),
                                   plotlyOutput("probsChangesPlot")
                            ),
                            column(6,
@@ -56,11 +58,14 @@ ui <- fluidPage(
                                   )
                            ),
                            column(1,
+                                  HTML("<br>"),
+                                  HTML("<br>"),
                                   plotlyOutput("parallelBlocksPlot")
                            )
                          )
                 ),
-                tabPanel("History", 
+                tabPanel("History", style='padding:70px;',
+                         HTML("<br>"),
                          plotlyOutput("timelinePlot")
                 )
            )
